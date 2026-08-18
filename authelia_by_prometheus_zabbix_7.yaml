@@ -26,6 +26,8 @@ zabbix_export:
       tags:
       - tag: component
         value: raw
+      - tag: Application
+        value: Authelia
       triggers:
       - uuid: 59175c77dae246a8be683ae17a6793a8
         expression: nodata(/Authelia by Prometheus/web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"],5m)=1
@@ -56,6 +58,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: fa0dd49c32c9426d9dda9300c2014794
       name: 'Authelia: Failed authentication attempts (total)'
       type: DEPENDENT
@@ -74,6 +78,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: 07c46265e705452797a1f30f75b7035b
       name: 'Authelia: Successful authentication duration sum'
       type: DEPENDENT
@@ -92,6 +98,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
       value_type: FLOAT
       units: s
     - uuid: f835ec4d54d74bdd9cd4824a6b68caab
@@ -112,6 +120,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
       value_type: FLOAT
       units: s
     - uuid: c91df5f5a7344021945c5b0b519942d3
@@ -132,6 +142,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authorization
+      - tag: Application
+        value: Authelia
     - uuid: f53c390ec3eb4d94a30180555dd2fc31
       name: 'Authelia: AuthZ HTTP 401 (total)'
       type: DEPENDENT
@@ -150,6 +162,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authorization
+      - tag: Application
+        value: Authelia
     - uuid: e151776dcb4d489b881872a5dcfae95f
       name: 'Authelia: Successful authentications per minute'
       type: DEPENDENT
@@ -176,6 +190,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: d1d7f2f90f1f407393454b8c8d195be9
       name: 'Authelia: Failed authentications per minute'
       type: DEPENDENT
@@ -202,6 +218,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
       triggers:
       - uuid: e9202e88bb054e07a5fcab1b0976ec96
         expression: avg(/Authelia by Prometheus/authelia.authn.failure.per_min,5m)>{$AUTHELIA.AUTH.FAIL.RATE.WARN}
@@ -234,6 +252,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: 0f909952736546238f7b5459b1e0e40e
       name: 'Authelia: Failed authentication duration per minute'
       type: DEPENDENT
@@ -260,6 +280,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: 34b81653bf784489b2929cfa6f49e09f
       name: 'Authelia: AuthZ HTTP 200 per minute'
       type: DEPENDENT
@@ -286,6 +308,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authorization
+      - tag: Application
+        value: Authelia
     - uuid: 2e432cef8dad4411969ad98cdb6e23d9
       name: 'Authelia: AuthZ HTTP 401 per minute'
       type: DEPENDENT
@@ -312,6 +336,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authorization
+      - tag: Application
+        value: Authelia
     - uuid: 810a8103a99641d5ba205283985bf9b5
       name: 'Authelia: Authentication attempts per minute'
       type: CALCULATED
@@ -325,6 +351,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: 21948ad8636242218774a73b40865390
       name: 'Authelia: Authentication success rate'
       type: CALCULATED
@@ -339,6 +367,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
     - uuid: e9a26073781f44dcaf0de4b49ac1b457
       name: 'Authelia: Average authentication latency'
       type: CALCULATED
@@ -352,6 +382,8 @@ zabbix_export:
       tags:
       - tag: component
         value: authentication
+      - tag: Application
+        value: Authelia
       triggers:
       - uuid: 4b1deee999544f36a43a85fab4da5343
         expression: avg(/Authelia by Prometheus/authelia.authn.latency.avg,5m)>{$AUTHELIA.AUTH.LATENCY.WARN} and avg(/Authelia by Prometheus/authelia.authn.total.per_min,5m)>0
@@ -376,6 +408,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
     - uuid: 949145b650724e8890b37c84b84f72d6
       name: 'Authelia: Go OS threads'
       type: DEPENDENT
@@ -393,6 +427,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
     - uuid: c4a200ce03db477dbc23552de2f66180
       name: 'Authelia: Go heap allocated'
       type: DEPENDENT
@@ -410,6 +446,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 0ef7b1d8722a4d958ec3c7abb6f4d159
       name: 'Authelia: Go heap in use'
@@ -428,6 +466,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 5f5259ff7a4b432898c33c94b8836482
       name: 'Authelia: Go memory from system'
@@ -446,6 +486,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 0836ae0002134f6bad5eb33ff5b3d52d
       name: 'Authelia: Go heap objects'
@@ -464,6 +506,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
     - uuid: f79830c7e65f4822bbbee3c976ee23b8
       name: 'Authelia: Go next GC threshold'
       type: DEPENDENT
@@ -481,6 +525,8 @@ zabbix_export:
       tags:
       - tag: component
         value: go
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: eac11ef0c40143d49ab6ed16d0dd689a
       name: 'Authelia: Process resident memory'
@@ -499,6 +545,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 74bfae89829245489152b6f128f10a5e
       name: 'Authelia: Process virtual memory'
@@ -517,6 +565,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 3f738c39908943399cc5c572dc8a48e0
       name: 'Authelia: Process open file descriptors'
@@ -535,6 +585,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
     - uuid: 98459d487aed4fe39c86f98e6ae4fb0a
       name: 'Authelia: Process maximum file descriptors'
       type: DEPENDENT
@@ -552,6 +604,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
     - uuid: 427f9e9fb93e41fe9b668ee2c578b1a3
       name: 'Authelia: Process start time'
       type: DEPENDENT
@@ -569,6 +623,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: unixtime
     - uuid: 94318dd5494d40fe97857387aea5b3b3
       name: 'Authelia: Process CPU seconds (total)'
@@ -587,6 +643,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: f75f526c78b643069d7d61e10345f5ce
       name: 'Authelia: Process CPU utilization'
@@ -615,6 +673,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
     - uuid: 84a5e54ba2484effa355b157e7813792
       name: 'Authelia: Network received (total)'
       type: DEPENDENT
@@ -632,6 +692,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 946c63af544d4ec38698fb5acd89ab1f
       name: 'Authelia: Network transmitted (total)'
@@ -650,6 +712,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       units: B
     - uuid: 9711176492d44dd0b2292b567a3a8a36
       name: 'Authelia: Network receive rate'
@@ -674,6 +738,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
     - uuid: 75d7ce6796244d129e4e5256fd8db063
       name: 'Authelia: Network transmit rate'
       type: DEPENDENT
@@ -697,6 +763,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
     - uuid: c53e849799744513b41de2e2354edbce
       name: 'Authelia: Metrics scrapes in flight'
       type: DEPENDENT
@@ -714,6 +782,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 016cc8b230f7419fa7e5e27aa24cbb0c
       name: 'Authelia: File descriptor utilization'
       type: CALCULATED
@@ -727,6 +797,8 @@ zabbix_export:
       tags:
       - tag: component
         value: process
+      - tag: Application
+        value: Authelia
       triggers:
       - uuid: ef3fa20f12594c7fb91263decbac22e4
         expression: min(/Authelia by Prometheus/authelia.process.fd.pct,5m)>{$AUTHELIA.FD.USAGE.WARN}
@@ -752,6 +824,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 3e4ea15b8da14a8092a31a558d49c97a
       name: 'Authelia: HTTP 200 GET requests per minute'
       type: DEPENDENT
@@ -778,6 +852,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: c472aa3600fd4e399f898f92e769a900
       name: 'Authelia: HTTP 200 POST requests (total)'
       type: DEPENDENT
@@ -797,6 +873,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 8508f234814a45f8b082c18a0a15f855
       name: 'Authelia: HTTP 200 POST requests per minute'
       type: DEPENDENT
@@ -823,6 +901,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 08713745a2324674a601c6c8d700aede
       name: 'Authelia: HTTP 302 GET requests (total)'
       type: DEPENDENT
@@ -842,6 +922,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 540bd3e9b1e94612967f5d08fbe9ce27
       name: 'Authelia: HTTP 302 GET requests per minute'
       type: DEPENDENT
@@ -868,6 +950,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: b44a98b5920f4a18b89b40c5683f4f05
       name: 'Authelia: HTTP 303 GET requests (total)'
       type: DEPENDENT
@@ -887,6 +971,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 4fae918bfbc84b3ca5ee79e26ad7776c
       name: 'Authelia: HTTP 303 GET requests per minute'
       type: DEPENDENT
@@ -913,6 +999,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 97e9f7bd7efc4e89acadc34d79546afa
       name: 'Authelia: HTTP 304 GET requests (total)'
       type: DEPENDENT
@@ -932,6 +1020,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: fd746c1974d14a12bb66c52f7e7aa1ab
       name: 'Authelia: HTTP 304 GET requests per minute'
       type: DEPENDENT
@@ -958,6 +1048,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 2616065596e84c439080ff1425e0f73c
       name: 'Authelia: HTTP 401 GET requests (total)'
       type: DEPENDENT
@@ -977,6 +1069,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 869d5c9343bd4e02ab9251c8f8ada52e
       name: 'Authelia: HTTP 401 GET requests per minute'
       type: DEPENDENT
@@ -1003,6 +1097,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 9c96dddcdc934a3ea5783018c25ec1c8
       name: 'Authelia: HTTP 401 POST requests (total)'
       type: DEPENDENT
@@ -1022,6 +1118,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 8b20943a5d8d45099ecbe92257c68460
       name: 'Authelia: HTTP 401 POST requests per minute'
       type: DEPENDENT
@@ -1048,6 +1146,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: a9187f49f3d943b0813c0ef53e058e1b
       name: 'Authelia: HTTP requests per minute'
       type: CALCULATED
@@ -1060,6 +1160,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: requests/min
     - uuid: 85e8bf175e574285bba250cf171800cf
       name: 'Authelia: HTTP 401 ratio'
@@ -1073,6 +1175,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: '%'
     - uuid: c8ab673c46e6434e83f819cee77292cf
       name: 'Authelia: HTTP 200 request duration sum'
@@ -1093,6 +1197,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: f22fca4f68c84e3ea5507c0a7cc9c10f
       name: 'Authelia: HTTP 200 request duration count'
@@ -1113,6 +1219,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: a74bd732445647c8b5ec4226ea7a364a
       name: 'Authelia: HTTP 200 duration delta per minute'
       type: DEPENDENT
@@ -1139,6 +1247,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 6b4fac8a12b545af95768e3b2083f103
       name: 'Authelia: HTTP 200 duration observations per minute'
       type: DEPENDENT
@@ -1165,6 +1275,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: dcfe4cc229d24ce09b58e788b29de09c
       name: 'Authelia: HTTP 200 average request latency'
       type: CALCULATED
@@ -1177,6 +1289,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
       triggers:
       - uuid: 5b2c29bc530646a4928c65a45b46bb2f
@@ -1203,6 +1317,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 306a1d66d72e43c5a522d47d9ba5c0ea
       name: 'Authelia: HTTP 302 request duration count'
@@ -1223,6 +1339,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: ad13ba7f45334dbbbea798c48c790af0
       name: 'Authelia: HTTP 302 duration delta per minute'
       type: DEPENDENT
@@ -1249,6 +1367,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: d64662a40205475eb7921d1872f94733
       name: 'Authelia: HTTP 302 duration observations per minute'
       type: DEPENDENT
@@ -1275,6 +1395,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: c807092bfba8468abeb5d727dc5fd1f8
       name: 'Authelia: HTTP 302 average request latency'
       type: CALCULATED
@@ -1287,6 +1409,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: ef33edd44b2a41478d08eda512849e46
       name: 'Authelia: HTTP 303 request duration sum'
@@ -1307,6 +1431,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 1af11da8892d43be8aa212e96f9a1529
       name: 'Authelia: HTTP 303 request duration count'
@@ -1327,6 +1453,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 6a7be7aa02054870ac7d65ee874fa309
       name: 'Authelia: HTTP 303 duration delta per minute'
       type: DEPENDENT
@@ -1353,6 +1481,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: d32c2c36e178483dba6ee1c85d8d794f
       name: 'Authelia: HTTP 303 duration observations per minute'
       type: DEPENDENT
@@ -1379,6 +1509,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: b8ee5377d9e9400eba1c026de4837e91
       name: 'Authelia: HTTP 303 average request latency'
       type: CALCULATED
@@ -1391,6 +1523,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 380f9ef40d494707a4e35597ebd78919
       name: 'Authelia: HTTP 304 request duration sum'
@@ -1411,6 +1545,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 6457adac027e4e2495615ada4997b801
       name: 'Authelia: HTTP 304 request duration count'
@@ -1431,6 +1567,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 47bf4928ab584fbca9a8fc7128ed0c95
       name: 'Authelia: HTTP 304 duration delta per minute'
       type: DEPENDENT
@@ -1457,6 +1595,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 6065dad04da44d89bab6960ef43808c0
       name: 'Authelia: HTTP 304 duration observations per minute'
       type: DEPENDENT
@@ -1483,6 +1623,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 92ba7a1f29294376bff2383ec4c96573
       name: 'Authelia: HTTP 304 average request latency'
       type: CALCULATED
@@ -1495,6 +1637,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 92c0e7b0579e4ba182dd93e3df9ecc7d
       name: 'Authelia: HTTP 401 request duration sum'
@@ -1515,6 +1659,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: b08e8b71d605435eaeedae4ef53b3b1e
       name: 'Authelia: HTTP 401 request duration count'
@@ -1535,6 +1681,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 4d5496ad1cec413fb0d529bbf490a803
       name: 'Authelia: HTTP 401 duration delta per minute'
       type: DEPENDENT
@@ -1561,6 +1709,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: 9155401ec73747f0b928e6dfb4ca7fc3
       name: 'Authelia: HTTP 401 duration observations per minute'
       type: DEPENDENT
@@ -1587,6 +1737,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
     - uuid: ce6fd573c9f94589bb443f9cdfe604cf
       name: 'Authelia: HTTP 401 average request latency'
       type: CALCULATED
@@ -1599,6 +1751,8 @@ zabbix_export:
       tags:
       - tag: component
         value: http
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: e3a63e91ebb54c389220093ceeea59e5
       name: 'Authelia: OIDC consent HTTP 200 requests (total)'
@@ -1619,6 +1773,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 4897266c03d940558ae2725974cd5696
       name: 'Authelia: OIDC consent HTTP 200 requests per minute'
       type: DEPENDENT
@@ -1645,6 +1801,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: abe7d9dcfa244bbeb5d3d57dbd0b6fff
       name: 'Authelia: OIDC consent HTTP 200 duration per minute'
       type: DEPENDENT
@@ -1671,6 +1829,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 78276a89d69540ebaa40015896d1b43d
       name: 'Authelia: OIDC consent HTTP 200 average latency'
       type: CALCULATED
@@ -1683,6 +1843,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 7ee77dc123a94ef383645029ffb79bf2
       name: 'Authelia: OIDC jwks HTTP 200 requests (total)'
@@ -1703,6 +1865,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 792ee37fce494299889a2315a8419e2c
       name: 'Authelia: OIDC jwks HTTP 200 requests per minute'
       type: DEPENDENT
@@ -1729,6 +1893,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 569a37a5a3184554802562d43eaaf7f9
       name: 'Authelia: OIDC jwks HTTP 200 duration per minute'
       type: DEPENDENT
@@ -1755,6 +1921,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 922f4ef6e9c549bba77a74151fd9a65a
       name: 'Authelia: OIDC jwks HTTP 200 average latency'
       type: CALCULATED
@@ -1767,6 +1935,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 86f7c13a636d47738e6b85ef60807656
       name: 'Authelia: OIDC revocation HTTP 200 requests (total)'
@@ -1787,6 +1957,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 8f22d0914fe345f7b282b0f57f5ade2f
       name: 'Authelia: OIDC revocation HTTP 200 requests per minute'
       type: DEPENDENT
@@ -1813,6 +1985,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 572a502d5430413197f3eeb995a1cb46
       name: 'Authelia: OIDC revocation HTTP 200 duration per minute'
       type: DEPENDENT
@@ -1839,6 +2013,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: c5072e76cffa4db3bed4423a3684905e
       name: 'Authelia: OIDC revocation HTTP 200 average latency'
       type: CALCULATED
@@ -1851,6 +2027,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: d13e5b143958446ba687b024334b9d9b
       name: 'Authelia: OIDC token HTTP 200 requests (total)'
@@ -1871,6 +2049,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 632988db493c473f93f4fa8103789a2f
       name: 'Authelia: OIDC token HTTP 200 requests per minute'
       type: DEPENDENT
@@ -1897,6 +2077,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 5f562f13def341f38bed103942a298ef
       name: 'Authelia: OIDC token HTTP 200 duration per minute'
       type: DEPENDENT
@@ -1923,6 +2105,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 58c2601543a542c9b80245122938e07b
       name: 'Authelia: OIDC token HTTP 200 average latency'
       type: CALCULATED
@@ -1935,6 +2119,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: bbbc75f4fcdd43c0b270691e59f83662
       name: 'Authelia: OIDC userinfo HTTP 200 requests (total)'
@@ -1955,6 +2141,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 08b02f5a8e7d4c9cb1aec83882bb5fe8
       name: 'Authelia: OIDC userinfo HTTP 200 requests per minute'
       type: DEPENDENT
@@ -1981,6 +2169,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 2d8700fd0ff84c9a94488e199760604b
       name: 'Authelia: OIDC userinfo HTTP 200 duration per minute'
       type: DEPENDENT
@@ -2007,6 +2197,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: efe898af2343401b85efc9b53b5a6c07
       name: 'Authelia: OIDC userinfo HTTP 200 average latency'
       type: CALCULATED
@@ -2019,6 +2211,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: 19b8f78868ca4453b04e10533388e04d
       name: 'Authelia: OIDC authorization HTTP 302 requests (total)'
@@ -2039,6 +2233,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 55d609939f804bea83efc1b2b98c5660
       name: 'Authelia: OIDC authorization HTTP 302 requests per minute'
       type: DEPENDENT
@@ -2065,6 +2261,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 0506134620304b389ea09c54116207d6
       name: 'Authelia: OIDC authorization HTTP 302 duration per minute'
       type: DEPENDENT
@@ -2091,6 +2289,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: be15363ff92d4d7c9241a9273c909710
       name: 'Authelia: OIDC authorization HTTP 302 average latency'
       type: CALCULATED
@@ -2103,6 +2303,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: e62fb2c6b88744ad8c2f916f180be997
       name: 'Authelia: OIDC authorization HTTP 303 requests (total)'
@@ -2123,6 +2325,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 15c5b221891443e7ae9e3d4ca5a920ae
       name: 'Authelia: OIDC authorization HTTP 303 requests per minute'
       type: DEPENDENT
@@ -2149,6 +2353,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: 75d2b272e5354cf893584a52f1c0419f
       name: 'Authelia: OIDC authorization HTTP 303 duration per minute'
       type: DEPENDENT
@@ -2175,6 +2381,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
     - uuid: d51f094fbac5465180c72e6192cc6161
       name: 'Authelia: OIDC authorization HTTP 303 average latency'
       type: CALCULATED
@@ -2187,6 +2395,8 @@ zabbix_export:
       tags:
       - tag: component
         value: oidc
+      - tag: Application
+        value: Authelia
       units: s
     - uuid: cc0ceff00f5f4c6fa729e666abf7360e
       name: 'Authelia: Metrics scrape HTTP 200 (total)'
@@ -2207,6 +2417,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: eb49c047f0c644cd8d18a898ad9ffd72
       name: 'Authelia: Metrics scrape HTTP 200 per minute'
       type: DEPENDENT
@@ -2233,6 +2445,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 12bdf214b97b4b0fbe2e789a913015bc
       name: 'Authelia: Metrics scrape HTTP 500 (total)'
       type: DEPENDENT
@@ -2252,6 +2466,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 4ea9bd6c88ef445f8da4949d9d489b48
       name: 'Authelia: Metrics scrape HTTP 500 per minute'
       type: DEPENDENT
@@ -2278,6 +2494,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 62e6f28e7e854aafae524749226801b3
       name: 'Authelia: Metrics scrape HTTP 503 (total)'
       type: DEPENDENT
@@ -2297,6 +2515,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 447e59d59b274cf5abaaa97ebe5674ab
       name: 'Authelia: Metrics scrape HTTP 503 per minute'
       type: DEPENDENT
@@ -2323,6 +2543,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
     - uuid: 9a401fed77d8477491b3f9ec9b64e367
       name: 'Authelia: Metrics scrape errors per minute'
       type: CALCULATED
@@ -2335,6 +2557,8 @@ zabbix_export:
       tags:
       - tag: component
         value: metrics
+      - tag: Application
+        value: Authelia
       units: requests/min
       triggers:
       - uuid: 575ba77b8806442a8ba233d2ee3fcd98
