@@ -7,35 +7,37 @@ zabbix_export:
   - uuid: fa3e7a37734b4990bd5c4f80027d4bb3
     template: Authelia by Prometheus
     name: Authelia by Prometheus
-    description: Monitors Authelia through its Prometheus /metrics endpoint. Includes authentication/authorization counters
-      and rates, authentication latency and success percentage, HTTP request rates and latency, OpenID Connect endpoint activity,
-      Prometheus scrape health, Go runtime metrics, process CPU/memory/network/file-descriptor metrics, graphs, dashboards,
-      and alerting.
+    description: Monitors Authelia through its Prometheus /metrics endpoint using a local Zabbix agent. The agent fetches localhost metrics with
+      web.page.get, so the metrics port does not need to be exposed to the Zabbix server/proxy. Includes authentication/authorization counters
+      and rates, HTTP and OIDC activity, request latency, Prometheus scrape health, Go runtime metrics, process metrics, graphs, dashboards, and
+      alerting.
     groups:
     - name: Templates/Applications
     items:
     - uuid: 22267bdae9484b7e8fead03ca5253ed9
-      name: 'Authelia: Prometheus metrics'
-      type: HTTP_AGENT
-      key: authelia.metrics.raw
+      name: 'Authelia: Get Prometheus metrics'
+      key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       delay: 1m
       history: 1h
       trends: '0'
       value_type: TEXT
-      url: '{$AUTHELIA.METRICS.URL}'
-      request_method: GET
-      retrieve_mode: BODY
-      status_codes: '200'
-      description: Raw Prometheus exposition data from the Authelia /metrics endpoint.
+      description: Fetches the Authelia Prometheus /metrics endpoint locally through the Zabbix agent using web.page.get. The HTTP response headers
+        are stripped before dependent Prometheus preprocessing is applied.
       tags:
       - tag: component
         value: raw
       triggers:
       - uuid: 59175c77dae246a8be683ae17a6793a8
-        expression: nodata(/Authelia by Prometheus/authelia.metrics.raw,5m)=1
+        expression: nodata(/Authelia by Prometheus/web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"],5m)=1
         name: 'Authelia: Metrics endpoint unavailable'
         priority: AVERAGE
         description: No Prometheus metrics have been received from Authelia for 5 minutes.
+      preprocessing:
+      - type: REGEX
+        parameters:
+        - (?s)^.*?\r?\n\r?\n(.*)$
+        - \1
+        error_handler: DISCARD_VALUE
     - uuid: 2138d89802d04cfe81902f2d93035aab
       name: 'Authelia: Successful authentication attempts (total)'
       type: DEPENDENT
@@ -48,7 +50,7 @@ zabbix_export:
         - authelia_authn_duration_count{success="true"}
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -66,7 +68,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -82,7 +84,7 @@ zabbix_export:
         - authelia_authn_duration_sum{success="true"}
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -102,7 +104,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -120,7 +122,7 @@ zabbix_export:
         - authelia_authz{code="200"}
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authorization
@@ -138,7 +140,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authorization
@@ -164,7 +166,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -190,7 +192,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -222,7 +224,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -248,7 +250,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authentication
@@ -274,7 +276,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authorization
@@ -300,7 +302,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: authorization
@@ -326,8 +328,8 @@ zabbix_export:
       value_type: FLOAT
       units: '%'
       params: 100*last(//authelia.authn.success.per_min)/(last(//authelia.authn.success.per_min)+last(//authelia.authn.failure.per_min)+0.000001)
-      description: Authentication success percentage for the latest interval. A value near 0 during periods with no authentication
-        traffic should be interpreted as no activity.
+      description: Authentication success percentage for the latest interval. A value near 0 during periods with no authentication traffic should
+        be interpreted as no activity.
       tags:
       - tag: component
         value: authentication
@@ -346,12 +348,11 @@ zabbix_export:
         value: authentication
       triggers:
       - uuid: 4b1deee999544f36a43a85fab4da5343
-        expression: avg(/Authelia by Prometheus/authelia.authn.latency.avg,5m)>{$AUTHELIA.AUTH.LATENCY.WARN} and avg(/Authelia
-          by Prometheus/authelia.authn.total.per_min,5m)>0
+        expression: avg(/Authelia by Prometheus/authelia.authn.latency.avg,5m)>{$AUTHELIA.AUTH.LATENCY.WARN} and avg(/Authelia by Prometheus/authelia.authn.total.per_min,5m)>0
         name: 'Authelia: Authentication latency is high'
         priority: WARNING
-        description: The 5-minute average authentication latency exceeded {$AUTHELIA.AUTH.LATENCY.WARN} seconds while authentication
-          traffic was present.
+        description: The 5-minute average authentication latency exceeded {$AUTHELIA.AUTH.LATENCY.WARN} seconds while authentication traffic was
+          present.
     - uuid: f6d2bcb508df4ef5a6ed7cca9cfc2d94
       name: 'Authelia: Go goroutines'
       type: DEPENDENT
@@ -365,7 +366,7 @@ zabbix_export:
         - go_goroutines
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -382,7 +383,7 @@ zabbix_export:
         - go_threads
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -399,7 +400,7 @@ zabbix_export:
         - go_memstats_heap_alloc_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -417,7 +418,7 @@ zabbix_export:
         - go_memstats_heap_inuse_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -435,7 +436,7 @@ zabbix_export:
         - go_memstats_sys_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -453,7 +454,7 @@ zabbix_export:
         - go_memstats_heap_objects
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -470,7 +471,7 @@ zabbix_export:
         - go_memstats_next_gc_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: go
@@ -488,7 +489,7 @@ zabbix_export:
         - process_resident_memory_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -506,7 +507,7 @@ zabbix_export:
         - process_virtual_memory_bytes
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -524,7 +525,7 @@ zabbix_export:
         - process_open_fds
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -541,7 +542,7 @@ zabbix_export:
         - process_max_fds
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -558,7 +559,7 @@ zabbix_export:
         - process_start_time_seconds
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -576,7 +577,7 @@ zabbix_export:
         - process_cpu_seconds_total
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -588,8 +589,8 @@ zabbix_export:
       history: 30d
       value_type: FLOAT
       units: '%'
-      description: CPU utilization derived from the rate of process_cpu_seconds_total. Values may exceed 100% if the process
-        uses multiple CPU cores.
+      description: CPU utilization derived from the rate of process_cpu_seconds_total. Values may exceed 100% if the process uses multiple CPU
+        cores.
       preprocessing:
       - type: PROMETHEUS_PATTERN
         parameters:
@@ -604,7 +605,7 @@ zabbix_export:
         parameters:
         - '100'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -621,7 +622,7 @@ zabbix_export:
         - process_network_receive_bytes_total
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -639,7 +640,7 @@ zabbix_export:
         - process_network_transmit_bytes_total
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -663,7 +664,7 @@ zabbix_export:
         parameters:
         - ''
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -686,7 +687,7 @@ zabbix_export:
         parameters:
         - ''
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: process
@@ -703,7 +704,7 @@ zabbix_export:
         - promhttp_metric_handler_requests_in_flight
         - value
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -741,7 +742,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -767,7 +768,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -786,7 +787,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -812,7 +813,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -831,7 +832,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -857,7 +858,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -876,7 +877,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -902,7 +903,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -921,7 +922,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -947,7 +948,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -966,7 +967,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -992,7 +993,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1011,7 +1012,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1037,7 +1038,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1082,7 +1083,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1102,7 +1103,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1128,7 +1129,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1154,7 +1155,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1173,8 +1174,7 @@ zabbix_export:
       units: s
       triggers:
       - uuid: 5b2c29bc530646a4928c65a45b46bb2f
-        expression: avg(/Authelia by Prometheus/authelia.http.200.latency.avg,5m)>{$AUTHELIA.HTTP.LATENCY.WARN} and avg(/Authelia
-          by Prometheus/authelia.http.200.duration.count.per_min,5m)>0
+        expression: avg(/Authelia by Prometheus/authelia.http.200.latency.avg,5m)>{$AUTHELIA.HTTP.LATENCY.WARN} and avg(/Authelia by Prometheus/authelia.http.200.duration.count.per_min,5m)>0
         name: 'Authelia: HTTP request latency is high'
         priority: WARNING
         description: Average Authelia HTTP 200 request latency exceeded {$AUTHELIA.HTTP.LATENCY.WARN} seconds for 5 minutes.
@@ -1193,7 +1193,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1213,7 +1213,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1239,7 +1239,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1265,7 +1265,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1297,7 +1297,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1317,7 +1317,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1343,7 +1343,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1369,7 +1369,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1401,7 +1401,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1421,7 +1421,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1447,7 +1447,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1473,7 +1473,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1505,7 +1505,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1525,7 +1525,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1551,7 +1551,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1577,7 +1577,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: http
@@ -1609,7 +1609,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1635,7 +1635,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1661,7 +1661,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1693,7 +1693,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1719,7 +1719,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1745,7 +1745,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1777,7 +1777,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1803,7 +1803,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1829,7 +1829,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1861,7 +1861,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1887,7 +1887,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1913,7 +1913,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1945,7 +1945,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1971,7 +1971,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -1997,7 +1997,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2029,7 +2029,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2055,7 +2055,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2081,7 +2081,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2113,7 +2113,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2139,7 +2139,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2165,7 +2165,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: oidc
@@ -2197,7 +2197,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2223,7 +2223,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2242,7 +2242,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2268,7 +2268,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2287,7 +2287,7 @@ zabbix_export:
         error_handler: CUSTOM_VALUE
         error_handler_params: '0'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2313,7 +2313,7 @@ zabbix_export:
         parameters:
         - '60'
       master_item:
-        key: authelia.metrics.raw
+        key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
       - tag: component
         value: metrics
@@ -2337,9 +2337,6 @@ zabbix_export:
         priority: WARNING
         description: Authelia's Prometheus metrics handler returned HTTP 500 or 503 during the last 5 minutes.
     macros:
-    - macro: '{$AUTHELIA.METRICS.URL}'
-      value: http://127.0.0.1:9959/metrics
-      description: Authelia Prometheus metrics endpoint.
     - macro: '{$AUTHELIA.AUTH.FAIL.RATE.WARN}'
       value: '5'
       description: Warning threshold for the 5-minute average failed authentication rate, attempts/min.
@@ -2355,6 +2352,15 @@ zabbix_export:
     - macro: '{$AUTHELIA.HTTP.LATENCY.WARN}'
       value: '2'
       description: Optional warning threshold for HTTP request latency, seconds.
+    - macro: '{$AUTHELIA.METRICS.HOST}'
+      value: localhost
+      description: Host used by the local Zabbix agent to reach the Authelia Prometheus endpoint.
+    - macro: '{$AUTHELIA.METRICS.PATH}'
+      value: metrics
+      description: Path of the Authelia Prometheus metrics endpoint, without a leading slash.
+    - macro: '{$AUTHELIA.METRICS.PORT}'
+      value: '9959'
+      description: Port of the Authelia Prometheus metrics endpoint.
     tags:
     - tag: class
       value: software
