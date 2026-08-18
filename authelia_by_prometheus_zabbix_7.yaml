@@ -49,6 +49,8 @@ zabbix_export:
         parameters:
         - authelia_authn_duration_count{success="true"}
         - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
       master_item:
         key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
@@ -83,6 +85,8 @@ zabbix_export:
         parameters:
         - authelia_authn_duration_sum{success="true"}
         - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
       master_item:
         key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
@@ -121,6 +125,8 @@ zabbix_export:
         parameters:
         - authelia_authz{code="200"}
         - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
       master_item:
         key: web.page.get["{$AUTHELIA.METRICS.HOST}","{$AUTHELIA.METRICS.PATH}","{$AUTHELIA.METRICS.PORT}"]
       tags:
