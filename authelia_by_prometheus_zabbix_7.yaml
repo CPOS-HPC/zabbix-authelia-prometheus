@@ -1,0 +1,2842 @@
+zabbix_export:
+  version: '7.0'
+  template_groups:
+  - uuid: b941f67e82a54ce886e14db998f20b2b
+    name: Templates/Applications
+  templates:
+  - uuid: fa3e7a37734b4990bd5c4f80027d4bb3
+    template: Authelia by Prometheus
+    name: Authelia by Prometheus
+    description: Monitors Authelia through its Prometheus /metrics endpoint. Includes authentication/authorization counters
+      and rates, authentication latency and success percentage, HTTP request rates and latency, OpenID Connect endpoint activity,
+      Prometheus scrape health, Go runtime metrics, process CPU/memory/network/file-descriptor metrics, graphs, dashboards,
+      and alerting.
+    groups:
+    - name: Templates/Applications
+    items:
+    - uuid: 22267bdae9484b7e8fead03ca5253ed9
+      name: 'Authelia: Prometheus metrics'
+      type: HTTP_AGENT
+      key: authelia.metrics.raw
+      delay: 1m
+      history: 1h
+      trends: '0'
+      value_type: TEXT
+      url: '{$AUTHELIA.METRICS.URL}'
+      request_method: GET
+      retrieve_mode: BODY
+      status_codes: '200'
+      description: Raw Prometheus exposition data from the Authelia /metrics endpoint.
+      tags:
+      - tag: component
+        value: raw
+      triggers:
+      - uuid: 59175c77dae246a8be683ae17a6793a8
+        expression: nodata(/Authelia by Prometheus/authelia.metrics.raw,5m)=1
+        name: 'Authelia: Metrics endpoint unavailable'
+        priority: AVERAGE
+        description: No Prometheus metrics have been received from Authelia for 5 minutes.
+    - uuid: 2138d89802d04cfe81902f2d93035aab
+      name: 'Authelia: Successful authentication attempts (total)'
+      type: DEPENDENT
+      key: authelia.authn.success.total
+      history: 30d
+      description: Cumulative successful authentication attempts since the Authelia process started.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_count{success="true"}
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: fa0dd49c32c9426d9dda9300c2014794
+      name: 'Authelia: Failed authentication attempts (total)'
+      type: DEPENDENT
+      key: authelia.authn.failure.total
+      history: 30d
+      description: Cumulative failed authentication attempts since the Authelia process started.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_count{success="false"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: 07c46265e705452797a1f30f75b7035b
+      name: 'Authelia: Successful authentication duration sum'
+      type: DEPENDENT
+      key: authelia.authn.success.duration.sum
+      history: 30d
+      description: Cumulative duration of successful authentication attempts.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_sum{success="true"}
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+      value_type: FLOAT
+      units: s
+    - uuid: f835ec4d54d74bdd9cd4824a6b68caab
+      name: 'Authelia: Failed authentication duration sum'
+      type: DEPENDENT
+      key: authelia.authn.failure.duration.sum
+      history: 30d
+      description: Cumulative duration of failed authentication attempts.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_sum{success="false"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+      value_type: FLOAT
+      units: s
+    - uuid: c91df5f5a7344021945c5b0b519942d3
+      name: 'Authelia: AuthZ HTTP 200 (total)'
+      type: DEPENDENT
+      key: authelia.authz.200.total
+      history: 30d
+      description: Cumulative authorization requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authz{code="200"}
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authorization
+    - uuid: f53c390ec3eb4d94a30180555dd2fc31
+      name: 'Authelia: AuthZ HTTP 401 (total)'
+      type: DEPENDENT
+      key: authelia.authz.401.total
+      history: 30d
+      description: Cumulative authorization requests returning HTTP 401. This is not the same as failed login attempts.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authz{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authorization
+    - uuid: e151776dcb4d489b881872a5dcfae95f
+      name: 'Authelia: Successful authentications per minute'
+      type: DEPENDENT
+      key: authelia.authn.success.per_min
+      history: 30d
+      value_type: FLOAT
+      units: attempts/min
+      description: Successful authentication attempts per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_count{success="true"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: d1d7f2f90f1f407393454b8c8d195be9
+      name: 'Authelia: Failed authentications per minute'
+      type: DEPENDENT
+      key: authelia.authn.failure.per_min
+      history: 30d
+      value_type: FLOAT
+      units: attempts/min
+      description: Failed authentication attempts per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_count{success="false"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+      triggers:
+      - uuid: e9202e88bb054e07a5fcab1b0976ec96
+        expression: avg(/Authelia by Prometheus/authelia.authn.failure.per_min,5m)>{$AUTHELIA.AUTH.FAIL.RATE.WARN}
+        name: 'Authelia: Authentication failure rate is high'
+        priority: WARNING
+        description: The 5-minute average failed-authentication rate exceeded {$AUTHELIA.AUTH.FAIL.RATE.WARN} attempts/min.
+    - uuid: aa9ed31e33e6400bbe0f537fc626155b
+      name: 'Authelia: Successful authentication duration per minute'
+      type: DEPENDENT
+      key: authelia.authn.success.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative successful authentication duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_sum{success="true"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: 0f909952736546238f7b5459b1e0e40e
+      name: 'Authelia: Failed authentication duration per minute'
+      type: DEPENDENT
+      key: authelia.authn.failure.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative failed authentication duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authn_duration_sum{success="false"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: 34b81653bf784489b2929cfa6f49e09f
+      name: 'Authelia: AuthZ HTTP 200 per minute'
+      type: DEPENDENT
+      key: authelia.authz.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authorization requests returning HTTP 200 per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authz{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authorization
+    - uuid: 2e432cef8dad4411969ad98cdb6e23d9
+      name: 'Authelia: AuthZ HTTP 401 per minute'
+      type: DEPENDENT
+      key: authelia.authz.401.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authorization requests returning HTTP 401 per minute. This is not equivalent to failed logins.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_authz{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: authorization
+    - uuid: 810a8103a99641d5ba205283985bf9b5
+      name: 'Authelia: Authentication attempts per minute'
+      type: CALCULATED
+      key: authelia.authn.total.per_min
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      units: attempts/min
+      params: last(//authelia.authn.success.per_min)+last(//authelia.authn.failure.per_min)
+      description: Successful plus failed authentication attempts per minute.
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: 21948ad8636242218774a73b40865390
+      name: 'Authelia: Authentication success rate'
+      type: CALCULATED
+      key: authelia.authn.success.pct
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      units: '%'
+      params: 100*last(//authelia.authn.success.per_min)/(last(//authelia.authn.success.per_min)+last(//authelia.authn.failure.per_min)+0.000001)
+      description: Authentication success percentage for the latest interval. A value near 0 during periods with no authentication
+        traffic should be interpreted as no activity.
+      tags:
+      - tag: component
+        value: authentication
+    - uuid: e9a26073781f44dcaf0de4b49ac1b457
+      name: 'Authelia: Average authentication latency'
+      type: CALCULATED
+      key: authelia.authn.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      units: s
+      params: (last(//authelia.authn.success.duration.per_min)+last(//authelia.authn.failure.duration.per_min))/(last(//authelia.authn.success.per_min)+last(//authelia.authn.failure.per_min)+0.000001)
+      description: Average end-to-end authentication attempt duration during the latest interval.
+      tags:
+      - tag: component
+        value: authentication
+      triggers:
+      - uuid: 4b1deee999544f36a43a85fab4da5343
+        expression: avg(/Authelia by Prometheus/authelia.authn.latency.avg,5m)>{$AUTHELIA.AUTH.LATENCY.WARN} and avg(/Authelia
+          by Prometheus/authelia.authn.total.per_min,5m)>0
+        name: 'Authelia: Authentication latency is high'
+        priority: WARNING
+        description: The 5-minute average authentication latency exceeded {$AUTHELIA.AUTH.LATENCY.WARN} seconds while authentication
+          traffic was present.
+    - uuid: f6d2bcb508df4ef5a6ed7cca9cfc2d94
+      name: 'Authelia: Go goroutines'
+      type: DEPENDENT
+      key: authelia.go.goroutines
+      history: 30d
+      value_type: UNSIGNED
+      description: Number of goroutines currently existing in the Authelia Go process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_goroutines
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+    - uuid: 949145b650724e8890b37c84b84f72d6
+      name: 'Authelia: Go OS threads'
+      type: DEPENDENT
+      key: authelia.go.threads
+      history: 30d
+      value_type: UNSIGNED
+      description: Number of OS threads created by the Go runtime.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_threads
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+    - uuid: c4a200ce03db477dbc23552de2f66180
+      name: 'Authelia: Go heap allocated'
+      type: DEPENDENT
+      key: authelia.go.heap.alloc
+      history: 30d
+      value_type: FLOAT
+      description: Heap bytes currently allocated and in use by the Go runtime.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_memstats_heap_alloc_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+      units: B
+    - uuid: 0ef7b1d8722a4d958ec3c7abb6f4d159
+      name: 'Authelia: Go heap in use'
+      type: DEPENDENT
+      key: authelia.go.heap.inuse
+      history: 30d
+      value_type: FLOAT
+      description: Heap bytes currently in use by the Go runtime.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_memstats_heap_inuse_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+      units: B
+    - uuid: 5f5259ff7a4b432898c33c94b8836482
+      name: 'Authelia: Go memory from system'
+      type: DEPENDENT
+      key: authelia.go.mem.sys
+      history: 30d
+      value_type: FLOAT
+      description: Total bytes obtained from the operating system by the Go runtime.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_memstats_sys_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+      units: B
+    - uuid: 0836ae0002134f6bad5eb33ff5b3d52d
+      name: 'Authelia: Go heap objects'
+      type: DEPENDENT
+      key: authelia.go.heap.objects
+      history: 30d
+      value_type: UNSIGNED
+      description: Current number of allocated heap objects.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_memstats_heap_objects
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+    - uuid: f79830c7e65f4822bbbee3c976ee23b8
+      name: 'Authelia: Go next GC threshold'
+      type: DEPENDENT
+      key: authelia.go.next_gc
+      history: 30d
+      value_type: FLOAT
+      description: Heap size at which the next garbage collection is expected.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - go_memstats_next_gc_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: go
+      units: B
+    - uuid: eac11ef0c40143d49ab6ed16d0dd689a
+      name: 'Authelia: Process resident memory'
+      type: DEPENDENT
+      key: authelia.process.rss
+      history: 30d
+      value_type: FLOAT
+      description: Resident memory size of the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_resident_memory_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: B
+    - uuid: 74bfae89829245489152b6f128f10a5e
+      name: 'Authelia: Process virtual memory'
+      type: DEPENDENT
+      key: authelia.process.vms
+      history: 30d
+      value_type: FLOAT
+      description: Virtual memory size of the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_virtual_memory_bytes
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: B
+    - uuid: 3f738c39908943399cc5c572dc8a48e0
+      name: 'Authelia: Process open file descriptors'
+      type: DEPENDENT
+      key: authelia.process.open_fds
+      history: 30d
+      value_type: UNSIGNED
+      description: Number of file descriptors currently open by the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_open_fds
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+    - uuid: 98459d487aed4fe39c86f98e6ae4fb0a
+      name: 'Authelia: Process maximum file descriptors'
+      type: DEPENDENT
+      key: authelia.process.max_fds
+      history: 30d
+      value_type: UNSIGNED
+      description: Maximum number of file descriptors available to the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_max_fds
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+    - uuid: 427f9e9fb93e41fe9b668ee2c578b1a3
+      name: 'Authelia: Process start time'
+      type: DEPENDENT
+      key: authelia.process.start_time
+      history: 30d
+      value_type: UNSIGNED
+      description: Authelia process start time as Unix epoch seconds.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_start_time_seconds
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: unixtime
+    - uuid: 94318dd5494d40fe97857387aea5b3b3
+      name: 'Authelia: Process CPU seconds (total)'
+      type: DEPENDENT
+      key: authelia.process.cpu.total
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative user and system CPU time consumed by the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_cpu_seconds_total
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: s
+    - uuid: f75f526c78b643069d7d61e10345f5ce
+      name: 'Authelia: Process CPU utilization'
+      type: DEPENDENT
+      key: authelia.process.cpu.pct
+      history: 30d
+      value_type: FLOAT
+      units: '%'
+      description: CPU utilization derived from the rate of process_cpu_seconds_total. Values may exceed 100% if the process
+        uses multiple CPU cores.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_cpu_seconds_total
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '100'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+    - uuid: 84a5e54ba2484effa355b157e7813792
+      name: 'Authelia: Network received (total)'
+      type: DEPENDENT
+      key: authelia.process.net.rx.total
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative network bytes received by the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_network_receive_bytes_total
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: B
+    - uuid: 946c63af544d4ec38698fb5acd89ab1f
+      name: 'Authelia: Network transmitted (total)'
+      type: DEPENDENT
+      key: authelia.process.net.tx.total
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative network bytes transmitted by the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_network_transmit_bytes_total
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+      units: B
+    - uuid: 9711176492d44dd0b2292b567a3a8a36
+      name: 'Authelia: Network receive rate'
+      type: DEPENDENT
+      key: authelia.process.net.rx.rate
+      history: 30d
+      value_type: FLOAT
+      units: Bps
+      description: Network receive throughput of the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_network_receive_bytes_total
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+    - uuid: 75d7ce6796244d129e4e5256fd8db063
+      name: 'Authelia: Network transmit rate'
+      type: DEPENDENT
+      key: authelia.process.net.tx.rate
+      history: 30d
+      value_type: FLOAT
+      units: Bps
+      description: Network transmit throughput of the Authelia process.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - process_network_transmit_bytes_total
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: process
+    - uuid: c53e849799744513b41de2e2354edbce
+      name: 'Authelia: Metrics scrapes in flight'
+      type: DEPENDENT
+      key: authelia.metrics.inflight
+      history: 30d
+      value_type: UNSIGNED
+      description: Current number of Prometheus metric scrapes being served.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_in_flight
+        - value
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 016cc8b230f7419fa7e5e27aa24cbb0c
+      name: 'Authelia: File descriptor utilization'
+      type: CALCULATED
+      key: authelia.process.fd.pct
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      units: '%'
+      params: 100*last(//authelia.process.open_fds)/(last(//authelia.process.max_fds)+0.000001)
+      description: Percentage of the Authelia process file descriptor limit currently in use.
+      tags:
+      - tag: component
+        value: process
+      triggers:
+      - uuid: ef3fa20f12594c7fb91263decbac22e4
+        expression: min(/Authelia by Prometheus/authelia.process.fd.pct,5m)>{$AUTHELIA.FD.USAGE.WARN}
+        name: 'Authelia: File descriptor utilization is high'
+        priority: WARNING
+        description: File descriptor utilization has stayed above {$AUTHELIA.FD.USAGE.WARN}% for 5 minutes.
+    - uuid: 3bb4151e31524671b96689b095411f55
+      name: 'Authelia: HTTP 200 GET requests (total)'
+      type: DEPENDENT
+      key: authelia.http.200.get.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 200 for method GET.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="200",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 3e4ea15b8da14a8092a31a558d49c97a
+      name: 'Authelia: HTTP 200 GET requests per minute'
+      type: DEPENDENT
+      key: authelia.http.200.get.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 200 GET request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="200",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: c472aa3600fd4e399f898f92e769a900
+      name: 'Authelia: HTTP 200 POST requests (total)'
+      type: DEPENDENT
+      key: authelia.http.200.post.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 200 for method POST.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="200",method="POST"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 8508f234814a45f8b082c18a0a15f855
+      name: 'Authelia: HTTP 200 POST requests per minute'
+      type: DEPENDENT
+      key: authelia.http.200.post.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 200 POST request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="200",method="POST"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 08713745a2324674a601c6c8d700aede
+      name: 'Authelia: HTTP 302 GET requests (total)'
+      type: DEPENDENT
+      key: authelia.http.302.get.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 302 for method GET.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="302",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 540bd3e9b1e94612967f5d08fbe9ce27
+      name: 'Authelia: HTTP 302 GET requests per minute'
+      type: DEPENDENT
+      key: authelia.http.302.get.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 302 GET request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="302",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: b44a98b5920f4a18b89b40c5683f4f05
+      name: 'Authelia: HTTP 303 GET requests (total)'
+      type: DEPENDENT
+      key: authelia.http.303.get.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 303 for method GET.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="303",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 4fae918bfbc84b3ca5ee79e26ad7776c
+      name: 'Authelia: HTTP 303 GET requests per minute'
+      type: DEPENDENT
+      key: authelia.http.303.get.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 303 GET request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="303",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 97e9f7bd7efc4e89acadc34d79546afa
+      name: 'Authelia: HTTP 304 GET requests (total)'
+      type: DEPENDENT
+      key: authelia.http.304.get.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 304 for method GET.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="304",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: fd746c1974d14a12bb66c52f7e7aa1ab
+      name: 'Authelia: HTTP 304 GET requests per minute'
+      type: DEPENDENT
+      key: authelia.http.304.get.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 304 GET request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="304",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 2616065596e84c439080ff1425e0f73c
+      name: 'Authelia: HTTP 401 GET requests (total)'
+      type: DEPENDENT
+      key: authelia.http.401.get.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 401 for method GET.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="401",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 869d5c9343bd4e02ab9251c8f8ada52e
+      name: 'Authelia: HTTP 401 GET requests per minute'
+      type: DEPENDENT
+      key: authelia.http.401.get.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 401 GET request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="401",method="GET"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 9c96dddcdc934a3ea5783018c25ec1c8
+      name: 'Authelia: HTTP 401 POST requests (total)'
+      type: DEPENDENT
+      key: authelia.http.401.post.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Authelia HTTP requests returning 401 for method POST.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="401",method="POST"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 8b20943a5d8d45099ecbe92257c68460
+      name: 'Authelia: HTTP 401 POST requests per minute'
+      type: DEPENDENT
+      key: authelia.http.401.post.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Authelia HTTP 401 POST request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request{code="401",method="POST"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: a9187f49f3d943b0813c0ef53e058e1b
+      name: 'Authelia: HTTP requests per minute'
+      type: CALCULATED
+      key: authelia.http.total.per_min
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.200.get.per_min)+last(//authelia.http.200.post.per_min)+last(//authelia.http.302.get.per_min)+last(//authelia.http.303.get.per_min)+last(//authelia.http.304.get.per_min)+last(//authelia.http.401.get.per_min)+last(//authelia.http.401.post.per_min)
+      description: Total HTTP request rate across the status-code/method combinations currently exposed by Authelia.
+      tags:
+      - tag: component
+        value: http
+      units: requests/min
+    - uuid: 85e8bf175e574285bba250cf171800cf
+      name: 'Authelia: HTTP 401 ratio'
+      type: CALCULATED
+      key: authelia.http.401.pct
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: 100*(last(//authelia.http.401.get.per_min)+last(//authelia.http.401.post.per_min))/(last(//authelia.http.total.per_min)+0.000001)
+      description: Share of Authelia HTTP requests returning 401. This is not equivalent to failed authentication attempts.
+      tags:
+      - tag: component
+        value: http
+      units: '%'
+    - uuid: c8ab673c46e6434e83f819cee77292cf
+      name: 'Authelia: HTTP 200 request duration sum'
+      type: DEPENDENT
+      key: authelia.http.200.duration.sum
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative processing duration for Authelia HTTP 200 responses.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: f22fca4f68c84e3ea5507c0a7cc9c10f
+      name: 'Authelia: HTTP 200 request duration count'
+      type: DEPENDENT
+      key: authelia.http.200.duration.count
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative number of Authelia HTTP 200 requests included in the duration histogram.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: a74bd732445647c8b5ec4226ea7a364a
+      name: 'Authelia: HTTP 200 duration delta per minute'
+      type: DEPENDENT
+      key: authelia.http.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative HTTP 200 processing duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 6b4fac8a12b545af95768e3b2083f103
+      name: 'Authelia: HTTP 200 duration observations per minute'
+      type: DEPENDENT
+      key: authelia.http.200.duration.count.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: HTTP 200 duration observations per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: dcfe4cc229d24ce09b58e788b29de09c
+      name: 'Authelia: HTTP 200 average request latency'
+      type: CALCULATED
+      key: authelia.http.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.200.duration.per_min)/(last(//authelia.http.200.duration.count.per_min)+0.000001)
+      description: Average processing latency for HTTP 200 responses during the latest interval.
+      tags:
+      - tag: component
+        value: http
+      units: s
+      triggers:
+      - uuid: 5b2c29bc530646a4928c65a45b46bb2f
+        expression: avg(/Authelia by Prometheus/authelia.http.200.latency.avg,5m)>{$AUTHELIA.HTTP.LATENCY.WARN} and avg(/Authelia
+          by Prometheus/authelia.http.200.duration.count.per_min,5m)>0
+        name: 'Authelia: HTTP request latency is high'
+        priority: WARNING
+        description: Average Authelia HTTP 200 request latency exceeded {$AUTHELIA.HTTP.LATENCY.WARN} seconds for 5 minutes.
+    - uuid: 67f68c37b38b462789d0a9075f7a902d
+      name: 'Authelia: HTTP 302 request duration sum'
+      type: DEPENDENT
+      key: authelia.http.302.duration.sum
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative processing duration for Authelia HTTP 302 responses.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="302"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: 306a1d66d72e43c5a522d47d9ba5c0ea
+      name: 'Authelia: HTTP 302 request duration count'
+      type: DEPENDENT
+      key: authelia.http.302.duration.count
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative number of Authelia HTTP 302 requests included in the duration histogram.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="302"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: ad13ba7f45334dbbbea798c48c790af0
+      name: 'Authelia: HTTP 302 duration delta per minute'
+      type: DEPENDENT
+      key: authelia.http.302.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative HTTP 302 processing duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="302"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: d64662a40205475eb7921d1872f94733
+      name: 'Authelia: HTTP 302 duration observations per minute'
+      type: DEPENDENT
+      key: authelia.http.302.duration.count.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: HTTP 302 duration observations per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="302"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: c807092bfba8468abeb5d727dc5fd1f8
+      name: 'Authelia: HTTP 302 average request latency'
+      type: CALCULATED
+      key: authelia.http.302.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.302.duration.per_min)/(last(//authelia.http.302.duration.count.per_min)+0.000001)
+      description: Average processing latency for HTTP 302 responses during the latest interval.
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: ef33edd44b2a41478d08eda512849e46
+      name: 'Authelia: HTTP 303 request duration sum'
+      type: DEPENDENT
+      key: authelia.http.303.duration.sum
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative processing duration for Authelia HTTP 303 responses.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="303"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: 1af11da8892d43be8aa212e96f9a1529
+      name: 'Authelia: HTTP 303 request duration count'
+      type: DEPENDENT
+      key: authelia.http.303.duration.count
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative number of Authelia HTTP 303 requests included in the duration histogram.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="303"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 6a7be7aa02054870ac7d65ee874fa309
+      name: 'Authelia: HTTP 303 duration delta per minute'
+      type: DEPENDENT
+      key: authelia.http.303.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative HTTP 303 processing duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="303"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: d32c2c36e178483dba6ee1c85d8d794f
+      name: 'Authelia: HTTP 303 duration observations per minute'
+      type: DEPENDENT
+      key: authelia.http.303.duration.count.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: HTTP 303 duration observations per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="303"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: b8ee5377d9e9400eba1c026de4837e91
+      name: 'Authelia: HTTP 303 average request latency'
+      type: CALCULATED
+      key: authelia.http.303.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.303.duration.per_min)/(last(//authelia.http.303.duration.count.per_min)+0.000001)
+      description: Average processing latency for HTTP 303 responses during the latest interval.
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: 380f9ef40d494707a4e35597ebd78919
+      name: 'Authelia: HTTP 304 request duration sum'
+      type: DEPENDENT
+      key: authelia.http.304.duration.sum
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative processing duration for Authelia HTTP 304 responses.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="304"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: 6457adac027e4e2495615ada4997b801
+      name: 'Authelia: HTTP 304 request duration count'
+      type: DEPENDENT
+      key: authelia.http.304.duration.count
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative number of Authelia HTTP 304 requests included in the duration histogram.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="304"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 47bf4928ab584fbca9a8fc7128ed0c95
+      name: 'Authelia: HTTP 304 duration delta per minute'
+      type: DEPENDENT
+      key: authelia.http.304.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative HTTP 304 processing duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="304"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 6065dad04da44d89bab6960ef43808c0
+      name: 'Authelia: HTTP 304 duration observations per minute'
+      type: DEPENDENT
+      key: authelia.http.304.duration.count.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: HTTP 304 duration observations per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="304"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 92ba7a1f29294376bff2383ec4c96573
+      name: 'Authelia: HTTP 304 average request latency'
+      type: CALCULATED
+      key: authelia.http.304.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.304.duration.per_min)/(last(//authelia.http.304.duration.count.per_min)+0.000001)
+      description: Average processing latency for HTTP 304 responses during the latest interval.
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: 92c0e7b0579e4ba182dd93e3df9ecc7d
+      name: 'Authelia: HTTP 401 request duration sum'
+      type: DEPENDENT
+      key: authelia.http.401.duration.sum
+      history: 30d
+      value_type: FLOAT
+      description: Cumulative processing duration for Authelia HTTP 401 responses.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: b08e8b71d605435eaeedae4ef53b3b1e
+      name: 'Authelia: HTTP 401 request duration count'
+      type: DEPENDENT
+      key: authelia.http.401.duration.count
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative number of Authelia HTTP 401 requests included in the duration histogram.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 4d5496ad1cec413fb0d529bbf490a803
+      name: 'Authelia: HTTP 401 duration delta per minute'
+      type: DEPENDENT
+      key: authelia.http.401.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative HTTP 401 processing duration, normalized per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_sum{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: 9155401ec73747f0b928e6dfb4ca7fc3
+      name: 'Authelia: HTTP 401 duration observations per minute'
+      type: DEPENDENT
+      key: authelia.http.401.duration.count.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: HTTP 401 duration observations per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_count{code="401"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: http
+    - uuid: ce6fd573c9f94589bb443f9cdfe604cf
+      name: 'Authelia: HTTP 401 average request latency'
+      type: CALCULATED
+      key: authelia.http.401.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.http.401.duration.per_min)/(last(//authelia.http.401.duration.count.per_min)+0.000001)
+      description: Average processing latency for HTTP 401 responses during the latest interval.
+      tags:
+      - tag: component
+        value: http
+      units: s
+    - uuid: e3a63e91ebb54c389220093ceeea59e5
+      name: 'Authelia: OIDC consent HTTP 200 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.consent.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect consent requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="consent"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 4897266c03d940558ae2725974cd5696
+      name: 'Authelia: OIDC consent HTTP 200 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.consent.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect consent HTTP 200 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="consent"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: abe7d9dcfa244bbeb5d3d57dbd0b6fff
+      name: 'Authelia: OIDC consent HTTP 200 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.consent.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect consent HTTP 200 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="200",endpoint="consent"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 78276a89d69540ebaa40015896d1b43d
+      name: 'Authelia: OIDC consent HTTP 200 average latency'
+      type: CALCULATED
+      key: authelia.oidc.consent.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.consent.200.duration.per_min)/(last(//authelia.oidc.consent.200.per_min)+0.000001)
+      description: Average OpenID Connect consent HTTP 200 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: 7ee77dc123a94ef383645029ffb79bf2
+      name: 'Authelia: OIDC jwks HTTP 200 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.jwks.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect jwks requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="jwks"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 792ee37fce494299889a2315a8419e2c
+      name: 'Authelia: OIDC jwks HTTP 200 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.jwks.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect jwks HTTP 200 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="jwks"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 569a37a5a3184554802562d43eaaf7f9
+      name: 'Authelia: OIDC jwks HTTP 200 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.jwks.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect jwks HTTP 200 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="200",endpoint="jwks"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 922f4ef6e9c549bba77a74151fd9a65a
+      name: 'Authelia: OIDC jwks HTTP 200 average latency'
+      type: CALCULATED
+      key: authelia.oidc.jwks.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.jwks.200.duration.per_min)/(last(//authelia.oidc.jwks.200.per_min)+0.000001)
+      description: Average OpenID Connect jwks HTTP 200 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: 86f7c13a636d47738e6b85ef60807656
+      name: 'Authelia: OIDC revocation HTTP 200 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.revocation.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect revocation requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="revocation"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 8f22d0914fe345f7b282b0f57f5ade2f
+      name: 'Authelia: OIDC revocation HTTP 200 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.revocation.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect revocation HTTP 200 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="revocation"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 572a502d5430413197f3eeb995a1cb46
+      name: 'Authelia: OIDC revocation HTTP 200 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.revocation.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect revocation HTTP 200 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="200",endpoint="revocation"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: c5072e76cffa4db3bed4423a3684905e
+      name: 'Authelia: OIDC revocation HTTP 200 average latency'
+      type: CALCULATED
+      key: authelia.oidc.revocation.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.revocation.200.duration.per_min)/(last(//authelia.oidc.revocation.200.per_min)+0.000001)
+      description: Average OpenID Connect revocation HTTP 200 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: d13e5b143958446ba687b024334b9d9b
+      name: 'Authelia: OIDC token HTTP 200 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.token.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect token requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="token"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 632988db493c473f93f4fa8103789a2f
+      name: 'Authelia: OIDC token HTTP 200 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.token.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect token HTTP 200 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="token"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 5f562f13def341f38bed103942a298ef
+      name: 'Authelia: OIDC token HTTP 200 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.token.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect token HTTP 200 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="200",endpoint="token"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 58c2601543a542c9b80245122938e07b
+      name: 'Authelia: OIDC token HTTP 200 average latency'
+      type: CALCULATED
+      key: authelia.oidc.token.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.token.200.duration.per_min)/(last(//authelia.oidc.token.200.per_min)+0.000001)
+      description: Average OpenID Connect token HTTP 200 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: bbbc75f4fcdd43c0b270691e59f83662
+      name: 'Authelia: OIDC userinfo HTTP 200 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.userinfo.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect userinfo requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="userinfo"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 08b02f5a8e7d4c9cb1aec83882bb5fe8
+      name: 'Authelia: OIDC userinfo HTTP 200 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.userinfo.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect userinfo HTTP 200 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="200",endpoint="userinfo"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 2d8700fd0ff84c9a94488e199760604b
+      name: 'Authelia: OIDC userinfo HTTP 200 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.userinfo.200.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect userinfo HTTP 200 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="200",endpoint="userinfo"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: efe898af2343401b85efc9b53b5a6c07
+      name: 'Authelia: OIDC userinfo HTTP 200 average latency'
+      type: CALCULATED
+      key: authelia.oidc.userinfo.200.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.userinfo.200.duration.per_min)/(last(//authelia.oidc.userinfo.200.per_min)+0.000001)
+      description: Average OpenID Connect userinfo HTTP 200 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: 19b8f78868ca4453b04e10533388e04d
+      name: 'Authelia: OIDC authorization HTTP 302 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.302.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect authorization requests returning HTTP 302.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="302",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 55d609939f804bea83efc1b2b98c5660
+      name: 'Authelia: OIDC authorization HTTP 302 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.302.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect authorization HTTP 302 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="302",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 0506134620304b389ea09c54116207d6
+      name: 'Authelia: OIDC authorization HTTP 302 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.302.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect authorization HTTP 302 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="302",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: be15363ff92d4d7c9241a9273c909710
+      name: 'Authelia: OIDC authorization HTTP 302 average latency'
+      type: CALCULATED
+      key: authelia.oidc.authorization.302.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.authorization.302.duration.per_min)/(last(//authelia.oidc.authorization.302.per_min)+0.000001)
+      description: Average OpenID Connect authorization HTTP 302 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: e62fb2c6b88744ad8c2f916f180be997
+      name: 'Authelia: OIDC authorization HTTP 303 requests (total)'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.303.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative OpenID Connect authorization requests returning HTTP 303.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="303",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 15c5b221891443e7ae9e3d4ca5a920ae
+      name: 'Authelia: OIDC authorization HTTP 303 requests per minute'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.303.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: OpenID Connect authorization HTTP 303 request rate.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_count{code="303",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: 75d2b272e5354cf893584a52f1c0419f
+      name: 'Authelia: OIDC authorization HTTP 303 duration per minute'
+      type: DEPENDENT
+      key: authelia.oidc.authorization.303.duration.per_min
+      history: 30d
+      value_type: FLOAT
+      units: s/min
+      description: Change in cumulative OpenID Connect authorization HTTP 303 processing duration.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - authelia_request_duration_openid_connect_sum{code="303",endpoint="authorization"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: oidc
+    - uuid: d51f094fbac5465180c72e6192cc6161
+      name: 'Authelia: OIDC authorization HTTP 303 average latency'
+      type: CALCULATED
+      key: authelia.oidc.authorization.303.latency.avg
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.oidc.authorization.303.duration.per_min)/(last(//authelia.oidc.authorization.303.per_min)+0.000001)
+      description: Average OpenID Connect authorization HTTP 303 latency during the latest interval.
+      tags:
+      - tag: component
+        value: oidc
+      units: s
+    - uuid: cc0ceff00f5f4c6fa729e666abf7360e
+      name: 'Authelia: Metrics scrape HTTP 200 (total)'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.200.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Prometheus metrics-handler requests returning HTTP 200.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: eb49c047f0c644cd8d18a898ad9ffd72
+      name: 'Authelia: Metrics scrape HTTP 200 per minute'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.200.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Prometheus metrics-handler HTTP 200 responses per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="200"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 12bdf214b97b4b0fbe2e789a913015bc
+      name: 'Authelia: Metrics scrape HTTP 500 (total)'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.500.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Prometheus metrics-handler requests returning HTTP 500.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="500"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 4ea9bd6c88ef445f8da4949d9d489b48
+      name: 'Authelia: Metrics scrape HTTP 500 per minute'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.500.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Prometheus metrics-handler HTTP 500 responses per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="500"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 62e6f28e7e854aafae524749226801b3
+      name: 'Authelia: Metrics scrape HTTP 503 (total)'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.503.total
+      history: 30d
+      value_type: UNSIGNED
+      description: Cumulative Prometheus metrics-handler requests returning HTTP 503.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="503"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 447e59d59b274cf5abaaa97ebe5674ab
+      name: 'Authelia: Metrics scrape HTTP 503 per minute'
+      type: DEPENDENT
+      key: authelia.metrics.scrape.503.per_min
+      history: 30d
+      value_type: FLOAT
+      units: requests/min
+      description: Prometheus metrics-handler HTTP 503 responses per minute.
+      preprocessing:
+      - type: PROMETHEUS_PATTERN
+        parameters:
+        - promhttp_metric_handler_requests_total{code="503"}
+        - value
+        error_handler: CUSTOM_VALUE
+        error_handler_params: '0'
+      - type: CHANGE_PER_SECOND
+        parameters:
+        - ''
+      - type: MULTIPLIER
+        parameters:
+        - '60'
+      master_item:
+        key: authelia.metrics.raw
+      tags:
+      - tag: component
+        value: metrics
+    - uuid: 9a401fed77d8477491b3f9ec9b64e367
+      name: 'Authelia: Metrics scrape errors per minute'
+      type: CALCULATED
+      key: authelia.metrics.scrape.errors.per_min
+      delay: 1m
+      history: 30d
+      value_type: FLOAT
+      params: last(//authelia.metrics.scrape.500.per_min)+last(//authelia.metrics.scrape.503.per_min)
+      description: Combined Prometheus metrics-handler 500 and 503 responses per minute.
+      tags:
+      - tag: component
+        value: metrics
+      units: requests/min
+      triggers:
+      - uuid: 575ba77b8806442a8ba233d2ee3fcd98
+        expression: max(/Authelia by Prometheus/authelia.metrics.scrape.errors.per_min,5m)>0
+        name: 'Authelia: Prometheus metrics handler returned errors'
+        priority: WARNING
+        description: Authelia's Prometheus metrics handler returned HTTP 500 or 503 during the last 5 minutes.
+    macros:
+    - macro: '{$AUTHELIA.METRICS.URL}'
+      value: http://127.0.0.1:9959/metrics
+      description: Authelia Prometheus metrics endpoint.
+    - macro: '{$AUTHELIA.AUTH.FAIL.RATE.WARN}'
+      value: '5'
+      description: Warning threshold for the 5-minute average failed authentication rate, attempts/min.
+    - macro: '{$AUTHELIA.AUTH.LATENCY.WARN}'
+      value: '2'
+      description: Warning threshold for the 5-minute average authentication latency, seconds.
+    - macro: '{$AUTHELIA.FD.USAGE.WARN}'
+      value: '80'
+      description: Warning threshold for Authelia file descriptor utilization, percent.
+    - macro: '{$AUTHELIA.HTTP.401.RATIO.WARN}'
+      value: '80'
+      description: Optional warning threshold for HTTP 401 ratio, percent.
+    - macro: '{$AUTHELIA.HTTP.LATENCY.WARN}'
+      value: '2'
+      description: Optional warning threshold for HTTP request latency, seconds.
+    tags:
+    - tag: class
+      value: software
+    - tag: target
+      value: authelia
+    dashboards:
+    - uuid: 148301055bfa487b88d05f553278344b
+      name: Authelia overview
+      pages:
+      - widgets:
+        - type: graph
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Authentication traffic'
+          - type: STRING
+            name: reference
+            value: AUTHA
+        - type: graph
+          x: '36'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Authentication success rate'
+          - type: STRING
+            name: reference
+            value: AUTHB
+        - type: graph
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Authentication latency'
+          - type: STRING
+            name: reference
+            value: AUTHC
+        - type: graph
+          x: '36'
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Authorization traffic'
+          - type: STRING
+            name: reference
+            value: AUTHD
+    - uuid: 9eaf4d72e4404b1080c36527906906a3
+      name: Authelia runtime
+      pages:
+      - widgets:
+        - type: graph
+          x: '0'
+          y: '0'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Process memory'
+          - type: STRING
+            name: reference
+            value: RUNA
+        - type: graph
+          x: '36'
+          y: '0'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Process CPU'
+          - type: STRING
+            name: reference
+            value: RUNB
+        - type: graph
+          x: '0'
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Network throughput'
+          - type: STRING
+            name: reference
+            value: RUNC
+        - type: graph
+          x: '36'
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Go runtime activity'
+          - type: STRING
+            name: reference
+            value: RUND
+        - type: graph
+          x: '0'
+          y: '10'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: File descriptors'
+          - type: STRING
+            name: reference
+            value: RUNE
+    - uuid: 9806d77cefc0408cb16eb1ada20ed095
+      name: Authelia HTTP and OIDC
+      pages:
+      - widgets:
+        - type: graph
+          x: '0'
+          y: '0'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: HTTP request rate'
+          - type: STRING
+            name: reference
+            value: HTTPA
+        - type: graph
+          x: '36'
+          y: '0'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: HTTP response codes'
+          - type: STRING
+            name: reference
+            value: HTTPB
+        - type: graph
+          x: '0'
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: HTTP latency'
+          - type: STRING
+            name: reference
+            value: HTTPC
+        - type: graph
+          x: '36'
+          y: '5'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: OIDC traffic'
+          - type: STRING
+            name: reference
+            value: HTTPD
+        - type: graph
+          x: '0'
+          y: '10'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: OIDC latency'
+          - type: STRING
+            name: reference
+            value: HTTPE
+        - type: graph
+          x: '36'
+          y: '10'
+          width: '36'
+          height: '5'
+          fields:
+          - type: GRAPH
+            name: graphid.0
+            value:
+              host: Authelia by Prometheus
+              name: 'Authelia: Metrics scrape health'
+          - type: STRING
+            name: reference
+            value: HTTPF
+  graphs:
+  - uuid: b14c2de6b13f4a70b670b601a37b8f21
+    name: 'Authelia: Authentication traffic'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authn.success.per_min
+    - sortorder: '1'
+      drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authn.failure.per_min
+  - uuid: 033b501381da479aac3d4355a123842b
+    name: 'Authelia: Authentication success rate'
+    yaxismax: '100'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authn.success.pct
+  - uuid: ab5b6d68b35b467aa0f6fc8534002b1c
+    name: 'Authelia: Authentication latency'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: A54F10
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authn.latency.avg
+  - uuid: 1fcf80ca3f9d4bfc8fc2364cd2e89718
+    name: 'Authelia: Authorization traffic'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authz.200.per_min
+    - sortorder: '1'
+      drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.authz.401.per_min
+  - uuid: 393dbadaa81f49a4a4df58d26510c5b3
+    name: 'Authelia: Process memory'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.process.rss
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.go.heap.alloc
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.go.heap.inuse
+      sortorder: '2'
+  - uuid: 91af08e2a9b94fde98f3ba8777635a83
+    name: 'Authelia: Process CPU'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.process.cpu.pct
+  - uuid: 9e7824ec05ef4095a4f8115843c5b030
+    name: 'Authelia: Network throughput'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.process.net.rx.rate
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.process.net.tx.rate
+      sortorder: '1'
+  - uuid: 87f5831fd7e54ab8bd1ce8985c78a3f3
+    name: 'Authelia: Go runtime activity'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.go.goroutines
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.go.threads
+      sortorder: '1'
+  - uuid: 93c58d189a1e4b2383b1191cba2b79a3
+    name: 'Authelia: File descriptors'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.process.fd.pct
+    yaxismax: '100'
+  - uuid: 1b3ac867725e4e3890b73407d135d817
+    name: 'Authelia: HTTP request rate'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.200.get.per_min
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.200.post.per_min
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.401.get.per_min
+      sortorder: '2'
+    - drawtype: BOLD_LINE
+      color: A54F10
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.401.post.per_min
+      sortorder: '3'
+  - uuid: 6517674151584362a08501a55db601ae
+    name: 'Authelia: HTTP response codes'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.200.get.per_min
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.302.get.per_min
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.303.get.per_min
+      sortorder: '2'
+    - drawtype: BOLD_LINE
+      color: A54F10
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.304.get.per_min
+      sortorder: '3'
+    - drawtype: BOLD_LINE
+      color: 6C59DC
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.401.get.per_min
+      sortorder: '4'
+  - uuid: 39ac08c9113640f786c8ccc97df0f30a
+    name: 'Authelia: HTTP latency'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.200.latency.avg
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.http.401.latency.avg
+      sortorder: '1'
+  - uuid: aaaa4599bd444c95ab9c95ae6d3c2596
+    name: 'Authelia: OIDC traffic'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.authorization.302.per_min
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.authorization.303.per_min
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.token.200.per_min
+      sortorder: '2'
+    - drawtype: BOLD_LINE
+      color: A54F10
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.userinfo.200.per_min
+      sortorder: '3'
+    - drawtype: BOLD_LINE
+      color: 6C59DC
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.consent.200.per_min
+      sortorder: '4'
+  - uuid: 07058bc6cafb4192b9055d55556cd3e0
+    name: 'Authelia: OIDC latency'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.authorization.302.latency.avg
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.authorization.303.latency.avg
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.token.200.latency.avg
+      sortorder: '2'
+    - drawtype: BOLD_LINE
+      color: A54F10
+      item:
+        host: Authelia by Prometheus
+        key: authelia.oidc.userinfo.200.latency.avg
+      sortorder: '3'
+  - uuid: 5acfec66742744f6afc4ec16064bfebe
+    name: 'Authelia: Metrics scrape health'
+    graph_items:
+    - drawtype: BOLD_LINE
+      color: 199C0D
+      item:
+        host: Authelia by Prometheus
+        key: authelia.metrics.scrape.200.per_min
+    - drawtype: BOLD_LINE
+      color: F63100
+      item:
+        host: Authelia by Prometheus
+        key: authelia.metrics.scrape.500.per_min
+      sortorder: '1'
+    - drawtype: BOLD_LINE
+      color: 2774A4
+      item:
+        host: Authelia by Prometheus
+        key: authelia.metrics.scrape.503.per_min
+      sortorder: '2'
